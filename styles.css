@@ -1,45 +1,12 @@
-/* CSS Variables for Theme Management */
+/* CSS Variables for Dark Theme (Default) */
 :root {
     /* SJ Design Brand Colors */
-    --primary-teal: #32a8a8;
-    --primary-tan: #e3dfde;
+    --primary-teal: #4bb8b8;
+    --primary-tan: #f0ebe9;
     --primary-teal-dark: #2a8f8f;
     --primary-tan-dark: #d4d0cf;
     
-    /* Light Theme Colors */
-    --bg-primary: #f5f7fa;
-    --bg-secondary: white;
-    --bg-tertiary: #f8f9fa;
-    --text-primary: #2c3e50;
-    --text-secondary: #7f8c8d;
-    --text-muted: #bdc3c7;
-    --border-color: #e1e8ed;
-    --shadow-light: rgba(0, 0, 0, 0.05);
-    --shadow-medium: rgba(0, 0, 0, 0.1);
-    --shadow-heavy: rgba(0, 0, 0, 0.2);
-    
-    /* Status Colors */
-    --status-active: #d4edda;
-    --status-active-text: #155724;
-    --status-on-hold: #fff3cd;
-    --status-on-hold-text: #856404;
-    --status-completed: #d1ecf1;
-    --status-completed-text: #0c5460;
-    --status-pending: #fff3cd;
-    --status-pending-text: #856404;
-    --status-in-progress: #d4edda;
-    --status-in-progress-text: #155724;
-    --status-waiting: #f8d7da;
-    --status-waiting-text: #721c24;
-    
-    /* Priority Colors */
-    --priority-high: #e74c3c;
-    --priority-medium: #f39c12;
-    --priority-low: #27ae60;
-}
-
-/* Dark Theme Colors */
-[data-theme="dark"] {
+    /* Dark Theme Colors (Default) */
     --bg-primary: #1a1a1a;
     --bg-secondary: #2d2d2d;
     --bg-tertiary: #3a3a3a;
@@ -51,9 +18,24 @@
     --shadow-medium: rgba(0, 0, 0, 0.4);
     --shadow-heavy: rgba(0, 0, 0, 0.6);
     
-    /* Adjust brand colors for dark mode */
-    --primary-teal: #4bb8b8;
-    --primary-tan: #f0ebe9;
+    /* Status Colors for Dark Mode */
+    --status-active: #1e4a2e;
+    --status-active-text: #4ade80;
+    --status-on-hold: #4a3c1e;
+    --status-on-hold-text: #fbbf24;
+    --status-completed: #1e3a4a;
+    --status-completed-text: #60a5fa;
+    --status-pending: #4a3c1e;
+    --status-pending-text: #fbbf24;
+    --status-in-progress: #1e4a2e;
+    --status-in-progress-text: #4ade80;
+    --status-waiting: #4a1e1e;
+    --status-waiting-text: #f87171;
+    
+    /* Priority Colors for Dark Mode */
+    --priority-high: #dc2626;
+    --priority-medium: #d97706;
+    --priority-low: #16a34a;
 }
 
 /* Reset and Base Styles */
@@ -256,27 +238,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-}
-
-.dark-mode-toggle {
-    width: 100%;
-    background: none;
-    border: none;
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    border-radius: 6px;
-}
-
-.dark-mode-toggle:hover {
-    background: var(--bg-tertiary);
-    color: var(--primary-teal);
 }
 
 .logout-btn {
@@ -518,6 +479,38 @@ body {
     font-size: 0.95rem;
     margin-bottom: 1.5rem;
     line-height: 1.6;
+}
+
+.project-financial-info {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-teal);
+}
+
+.project-price,
+.project-deposit,
+.project-hosting {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.project-price {
+    font-weight: 600;
+    color: var(--primary-teal);
+}
+
+.project-deposit {
+    color: var(--text-secondary);
+}
+
+.project-hosting {
+    color: var(--priority-low);
 }
 
 .project-stats {
@@ -774,6 +767,50 @@ body {
     box-shadow: 0 0 0 3px rgba(50, 168, 168, 0.1);
 }
 
+/* Checkbox Styles */
+.checkbox-label {
+    display: flex !important;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+    margin-bottom: 0 !important;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto !important;
+    margin: 0;
+    cursor: pointer;
+}
+
+.checkmark {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark {
+    background: var(--primary-teal);
+    border-color: var(--primary-teal);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
 /* Buttons */
 .btn {
     padding: 0.75rem 1.5rem;
@@ -969,32 +1006,59 @@ body {
     .sidebar {
         width: 100%;
         height: auto;
-        flex-direction: row;
-        overflow-x: auto;
+        flex-direction: column;
+        padding: 1rem;
+    }
+    
+    .sidebar-header {
+        margin-bottom: 1rem;
+    }
+    
+    .sidebar-header h2 {
+        display: none; /* Hide "Project Manager" text on mobile */
     }
     
     .sidebar-nav {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
+        gap: 0.5rem;
         padding: 0;
     }
     
     .nav-item {
-        white-space: nowrap;
         padding: 1rem;
-        border-right: 1px solid var(--border-color);
-        border-bottom: none;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-secondary);
+        transition: all 0.3s ease;
     }
     
     .nav-item.active {
-        border-right: 3px solid var(--primary-teal);
-        border-bottom: none;
+        background: var(--primary-teal);
+        color: white;
+        border-color: var(--primary-teal);
+    }
+    
+    .nav-item:hover {
+        background: var(--bg-tertiary);
+    }
+    
+    .nav-item.active:hover {
+        background: var(--primary-teal-dark);
+    }
+    
+    /* Hide Reminders and Settings on mobile */
+    .nav-item[data-tab="reminders"],
+    .nav-item[data-tab="settings"] {
+        display: none;
     }
     
     .sidebar-footer {
-        border-top: none;
-        border-left: 1px solid var(--border-color);
-        flex-direction: row;
+        border-top: 1px solid var(--border-color);
+        border-left: none;
+        flex-direction: column;
+        margin-top: 1rem;
+        padding-top: 1rem;
     }
     
     .content-area {

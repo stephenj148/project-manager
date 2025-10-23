@@ -42,13 +42,11 @@ class ProjectManager {
         this.currentEditingId = null;
         this.reminderCheckInterval = null;
         this.unsubscribes = {};
-        this.isDarkMode = false;
         
         this.init();
     }
 
     init() {
-        this.loadTheme();
         this.setupEventListeners();
         onAuthStateChanged(auth, (user) => {
             console.log('Auth state:', user ? `Logged in: ${user.email}` : 'Logged out');
@@ -70,42 +68,6 @@ class ProjectManager {
         });
     }
 
-    // Theme Management
-    loadTheme() {
-        const savedTheme = localStorage.getItem('projectManagerTheme');
-        if (savedTheme === 'dark') {
-            this.isDarkMode = true;
-            document.documentElement.setAttribute('data-theme', 'dark');
-            this.updateDarkModeButton();
-        }
-    }
-
-    toggleDarkMode() {
-        this.isDarkMode = !this.isDarkMode;
-        if (this.isDarkMode) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            localStorage.setItem('projectManagerTheme', 'dark');
-        } else {
-            document.documentElement.removeAttribute('data-theme');
-            localStorage.setItem('projectManagerTheme', 'light');
-        }
-        this.updateDarkModeButton();
-    }
-
-    updateDarkModeButton() {
-        const button = document.getElementById('darkModeToggle');
-        if (!button) return;
-        const icon = button.querySelector('i');
-        const text = button.querySelector('span');
-        if (this.isDarkMode) {
-            icon.className = 'fas fa-sun';
-            text.textContent = 'Light Mode';
-        } else {
-            icon.className = 'fas fa-moon';
-            text.textContent = 'Dark Mode';
-        }
-    }
-
     // Event Listeners
     setupEventListeners() {
         const loginForm = document.getElementById('loginForm');
@@ -113,9 +75,6 @@ class ProjectManager {
 
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) logoutBtn.addEventListener('click', () => this.logout());
-
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        if (darkModeToggle) darkModeToggle.addEventListener('click', () => this.toggleDarkMode());
 
         document.querySelectorAll('.nav-item').forEach(btn => {
             btn.addEventListener('click', (e) => this.switchTab(e.target.closest('.nav-item').dataset.tab));
@@ -350,12 +309,25 @@ class ProjectManager {
                 document.getElementById('projectDescription').value = project.description || '';
                 document.getElementById('projectStatus').value = project.status;
                 document.getElementById('projectPriority').value = project.priority;
+                document.getElementById('projectPrice').value = project.price || '';
+                document.getElementById('projectDepositDate').value = project.depositDate || '';
+                document.getElementById('projectHostingPaid').checked = project.hostingPaid || false;
             }
         } else {
             title.textContent = 'New Project';
             form.reset();
         }
         modal.classList.add('show');
+    }
+
+    // Helper method to format URL with https:// prefix
+    formatUrl(url) {
+        if (!url) return '';
+        url = url.trim();
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            return 'https://' + url;
+        }
+        return url;
     }
 
     async saveProject() {
@@ -365,10 +337,13 @@ class ProjectManager {
         }
         const formData = {
             name: document.getElementById('projectName')?.value || '',
-            url: document.getElementById('projectUrl')?.value || '',
+            url: this.formatUrl(document.getElementById('projectUrl')?.value || ''),
             description: document.getElementById('projectDescription')?.value || '',
             status: document.getElementById('projectStatus')?.value || 'active',
-            priority: document.getElementById('projectPriority')?.value || 'medium'
+            priority: document.getElementById('projectPriority')?.value || 'medium',
+            price: parseFloat(document.getElementById('projectPrice')?.value) || 0,
+            depositDate: document.getElementById('projectDepositDate')?.value || '',
+            hostingPaid: document.getElementById('projectHostingPaid')?.checked || false
         };
         const userId = this.currentUser;
         const projectsRef = collection(db, `users/${userId}/projects`);
@@ -438,6 +413,11 @@ class ProjectManager {
                     </div>
                     ${project.url ? `<a href="${project.url}" target="_blank" class="project-url"><i class="fas fa-external-link-alt"></i> ${project.url}</a>` : ''}
                     ${project.description ? `<div class="project-description">${project.description}</div>` : ''}
+                    <div class="project-financial-info">
+                        ${project.price > 0 ? `<div class="project-price"><i class="fas fa-dollar-sign"></i> $${project.price.toFixed(2)}</div>` : ''}
+                        ${project.depositDate ? `<div class="project-deposit"><i class="fas fa-calendar-check"></i> Deposit paid: ${new Date(project.depositDate).toLocaleDateString()}</div>` : ''}
+                        ${project.hostingPaid ? `<div class="project-hosting"><i class="fas fa-server"></i> Hosting paid for year</div>` : ''}
+                    </div>
                     <div class="project-stats">
                         <span><i class="fas fa-tasks"></i> ${completedTasks}/${totalTasks} tasks completed</span>
                         <span><i class="fas fa-flag"></i> ${project.priority}</span>

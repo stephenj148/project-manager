@@ -65,10 +65,6 @@
                 </button>
             </nav>
             <div class="sidebar-footer">
-                <button id="darkModeToggle" class="dark-mode-toggle">
-                    <i class="fas fa-moon"></i>
-                    <span>Dark Mode</span>
-                </button>
                 <button id="logoutBtn" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
@@ -282,6 +278,23 @@
                             <option value="high">High</option>
                         </select>
                     </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Agreed Price ($)</label>
+                        <input type="number" id="projectPrice" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>50% Deposit Paid Date</label>
+                        <input type="date" id="projectDepositDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="projectHostingPaid">
+                        <span class="checkmark"></span>
+                        Client has paid hosting for the year
+                    </label>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary close-btn">Cancel</button>
