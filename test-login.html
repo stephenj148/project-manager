@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test</title></head>
+<body>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="pass" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <div id="status"></div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+
+        const firebaseConfig = { /* Your full config here */ };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        window.login = async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            const status = document.getElementById('status');
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                status.innerHTML = 'Success! Logged in.';
+            } catch (error) {
+                if (error.code === 'auth/user-not-found') {
+                    await createUserWithEmailAndPassword(auth, email, pass);
+                    status.innerHTML = 'Account created & logged in!';
+                } else {
+                    status.innerHTML = `Error: ${error.message}`;
+                }
+            }
+        };
+    </script>
+</body>
+</html>
