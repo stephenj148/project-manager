@@ -1,4 +1,4 @@
-// Personal Project Manager - Web Application JavaScript with Firebase Sync (Modular SDK, Corrected Config)
+// Personal Project Manager - Web Application JavaScript with Firebase Sync (Modular SDK, Updated Secure Config)
 // Note: Use Firebase Modular SDK v10+. Include as <script type="module" src="script.js"></script> in HTML.
 
 // Firebase imports (full CDN URLs for browser compatibility)
@@ -7,15 +7,15 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebas
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
 import { getFirestore, enableIndexedDbPersistence, collection, onSnapshot, addDoc, setDoc, updateDoc, deleteDoc, doc, writeBatch, serverTimestamp, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-// Firebase config (corrected storageBucket to .appspot.com format)
+// Firebase config (updated with your new secure key & appId)
 const firebaseConfig = {
-  apiKey: "AIzaSyBSV2aIyJNTWqLcmEKNswQeYekznkraiU4",
+  apiKey: "AIzaSyDwgmzGLkwduT75hAwgA-60T4ei3w2YnDA",
   authDomain: "sj-design-project-management.firebaseapp.com",
   projectId: "sj-design-project-management",
-  storageBucket: "sj-design-project-management.appspot.com",  // Fixed: Use .appspot.com, not .firebasestorage.app
+  storageBucket: "sj-design-project-management.firebasestorage.app",
   messagingSenderId: "1036574888660",
-  appId: "1:1036574888660:web:0a00006d6b613de86a2141",
-  measurementId: "G-V5EWKF8NB8"
+  appId: "1:1036574888660:web:875672378aaef8f46a2141",
+  measurementId: "G-ZMTQCGRKBD"
 };
 
 // Initialize Firebase
