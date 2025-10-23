@@ -358,34 +358,41 @@ class ProjectManager {
         modal.classList.add('show');
     }
 
-    async saveProject() {
-        if (!this.currentUser) {
-            this.showError('Not logged in');
-            return;
-        }
-        const formData = {
-            name: document.getElementById('projectName')?.value || '',
-            url: document.getElementById('projectUrl')?.value || '',
-            description: document.getElementById('projectDescription')?.value || '',
-            status: document.getElementById('projectStatus')?.value || 'active',
-            priority: document.getElementById('projectPriority')?.value || 'medium'
-        };
-        const userId = this.currentUser;
-        const projectsRef = collection(db, `users/${userId}/projects`);
-        const timestamp = serverTimestamp();
-        try {
-            if (this.currentEditingId) {
-                await setDoc(doc(projectsRef, this.currentEditingId), { ...formData, updatedAt: timestamp }, { merge: true });
-            } else {
-                await addDoc(projectsRef, { ...formData, createdAt: timestamp, updatedAt: timestamp });
-            }
-            this.closeModal(document.getElementById('projectModal'));
-            this.showNotification('Project saved successfully!', 'success');
-        } catch (error) {
-            console.error('Save project error:', error);
-            this.showError('Error saving project: ' + error.message);
-        }
+async saveProject() {
+    if (!this.currentUser) {
+        this.showError('Not logged in');
+        return;
     }
+    let url = document.getElementById('projectUrl')?.value.trim() || '';
+    
+    // Auto-fix URL: Prepend "https://" if no protocol
+    if (url && !url.match(/^https?:\/\//)) {
+        url = 'https://' + url;
+    }
+    
+    const formData = {
+        name: document.getElementById('projectName')?.value || '',
+        url: url,  // Use the fixed version
+        description: document.getElementById('projectDescription')?.value || '',
+        status: document.getElementById('projectStatus')?.value || 'active',
+        priority: document.getElementById('projectPriority')?.value || 'medium'
+    };
+    const userId = this.currentUser;
+    const projectsRef = collection(db, `users/${userId}/projects`);
+    const timestamp = serverTimestamp();
+    try {
+        if (this.currentEditingId) {
+            await setDoc(doc(projectsRef, this.currentEditingId), { ...formData, updatedAt: timestamp }, { merge: true });
+        } else {
+            await addDoc(projectsRef, { ...formData, createdAt: timestamp, updatedAt: timestamp });
+        }
+        this.closeModal(document.getElementById('projectModal'));
+        this.showNotification('Project saved successfully!', 'success');
+    } catch (error) {
+        console.error('Save project error:', error);
+        this.showError('Error saving project: ' + error.message);
+    }
+}
 
     async deleteProject(projectId) {
         if (!confirm('Are you sure? This deletes associated tasks too.')) return;
