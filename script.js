@@ -1,4 +1,40 @@
-// Personal Project Manager - Web Application JavaScript
+```javascript
+// Personal Project Manager - Web Application JavaScript with Firebase Sync (Modular SDK)
+// Note: Use Firebase Modular SDK v10+. Include scripts in HTML as:
+// <script type="module" src="your-script.js"></script>
+// Or bundle with a tool like Vite/Webpack.
+
+// Firebase config (pasted from your console)
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import { getFirestore, enableIndexedDbPersistence, collection, onSnapshot, addDoc, setDoc, updateDoc, deleteDoc, doc, writeBatch, serverTimestamp, getDocs } from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBSV2aIyJNTWqLcmEKNswQeYekznkraiU4",
+  authDomain: "sj-design-project-management.firebaseapp.com",
+  projectId: "sj-design-project-management",
+  storageBucket: "sj-design-project-management.firebasestorage.app",
+  messagingSenderId: "1036574888660",
+  appId: "1:1036574888660:web:0a00006d6b613de86a2141",
+  measurementId: "G-V5EWKF8NB8"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app); // Optional, if you want analytics
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Enable offline persistence (once, globally)
+enableIndexedDbPersistence(db).catch((err) => {
+  if (err.code === 'failed-precondition') {
+    console.log('Persistence failed: Multiple tabs open, persistence can only be enabled in one tab at a time.');
+  } else if (err.code === 'unimplemented') {
+    console.log('Persistence failed: Browser does not support persistence.');
+  }
+});
+
 class ProjectManager {
     constructor() {
         this.currentUser = null;
@@ -7,20 +43,37 @@ class ProjectManager {
         this.reminders = [];
         this.currentEditingId = null;
         this.reminderCheckInterval = null;
+        this.unsubscribes = {}; // For cleaning up Firestore listeners
         this.isDarkMode = false;
         
         this.init();
     }
 
     init() {
-        this.loadData();
         this.loadTheme();
         this.setupEventListeners();
-        this.checkReminders();
-        this.startReminderChecker();
+        // Auth state listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                this.currentUser = user.uid;
+                if (!document.getElementById('dashboard').classList.contains('hidden')) {
+                    this.setupDataListeners();
+                    this.checkReminders();
+                    this.startReminderChecker();
+                }
+            } else {
+                this.currentUser = null;
+                this.projects = [];
+                this.tasks = [];
+                this.reminders = [];
+                Object.values(this.unsubscribes).forEach(unsub => unsub());
+                this.unsubscribes = {};
+                this.showLoginScreen();
+            }
+        });
     }
 
-    // Theme Management
+    // Theme Management (unchanged, uses localStorage)
     loadTheme() {
         const savedTheme = localStorage.getItem('projectManagerTheme');
         if (savedTheme === 'dark') {
@@ -46,6 +99,7 @@ class ProjectManager {
 
     updateDarkModeButton() {
         const button = document.getElementById('darkModeToggle');
+        if (!button) return;
         const icon = button.querySelector('i');
         const text = button.querySelector('span');
         
@@ -58,23 +112,32 @@ class ProjectManager {
         }
     }
 
-    // Authentication
+    // Authentication (modified for Firebase)
     setupEventListeners() {
         // Login form
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleLogin();
-        });
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleLogin();
+            });
+        }
 
         // Logout
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            this.logout();
-        });
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                this.logout();
+            });
+        }
 
         // Dark mode toggle
-        document.getElementById('darkModeToggle').addEventListener('click', () => {
-            this.toggleDarkMode();
-        });
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener('click', () => {
+                this.toggleDarkMode();
+            });
+        }
 
         // Navigation
         document.querySelectorAll('.nav-item').forEach(btn => {
@@ -84,65 +147,104 @@ class ProjectManager {
         });
 
         // Project management
-        document.getElementById('addProjectBtn').addEventListener('click', () => {
-            this.openProjectModal();
-        });
+        const addProjectBtn = document.getElementById('addProjectBtn');
+        if (addProjectBtn) {
+            addProjectBtn.addEventListener('click', () => {
+                this.openProjectModal();
+            });
+        }
 
-        document.getElementById('projectForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveProject();
-        });
+        const projectForm = document.getElementById('projectForm');
+        if (projectForm) {
+            projectForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveProject();
+            });
+        }
 
         // Task management
-        document.getElementById('addTaskBtn').addEventListener('click', () => {
-            this.openTaskModal();
-        });
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        if (addTaskBtn) {
+            addTaskBtn.addEventListener('click', () => {
+                this.openTaskModal();
+            });
+        }
 
-        document.getElementById('taskForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveTask();
-        });
+        const taskForm = document.getElementById('taskForm');
+        if (taskForm) {
+            taskForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveTask();
+            });
+        }
 
         // Reminder management
-        document.getElementById('addReminderBtn').addEventListener('click', () => {
-            this.openReminderModal();
-        });
+        const addReminderBtn = document.getElementById('addReminderBtn');
+        if (addReminderBtn) {
+            addReminderBtn.addEventListener('click', () => {
+                this.openReminderModal();
+            });
+        }
 
-        document.getElementById('reminderForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveReminder();
-        });
+        const reminderForm = document.getElementById('reminderForm');
+        if (reminderForm) {
+            reminderForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveReminder();
+            });
+        }
 
         // Settings
-        document.getElementById('changePasswordForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.changePassword();
-        });
+        const changePasswordForm = document.getElementById('changePasswordForm');
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.changePassword();
+            });
+        }
 
-        document.getElementById('exportDataBtn').addEventListener('click', () => {
-            this.exportData();
-        });
+        const exportDataBtn = document.getElementById('exportDataBtn');
+        if (exportDataBtn) {
+            exportDataBtn.addEventListener('click', () => {
+                this.exportData();
+            });
+        }
 
-        document.getElementById('importDataBtn').addEventListener('click', () => {
-            document.getElementById('importFile').click();
-        });
+        const importDataBtn = document.getElementById('importDataBtn');
+        if (importDataBtn) {
+            importDataBtn.addEventListener('click', () => {
+                document.getElementById('importFile').click();
+            });
+        }
 
-        document.getElementById('importFile').addEventListener('change', (e) => {
-            this.importData(e.target.files[0]);
-        });
+        const importFile = document.getElementById('importFile');
+        if (importFile) {
+            importFile.addEventListener('change', (e) => {
+                this.importData(e.target.files[0]);
+            });
+        }
 
         // Filters
-        document.getElementById('statusFilter').addEventListener('change', () => {
-            this.renderProjects();
-        });
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter) {
+            statusFilter.addEventListener('change', () => {
+                this.renderProjects();
+            });
+        }
 
-        document.getElementById('taskStatusFilter').addEventListener('change', () => {
-            this.renderTasks();
-        });
+        const taskStatusFilter = document.getElementById('taskStatusFilter');
+        if (taskStatusFilter) {
+            taskStatusFilter.addEventListener('change', () => {
+                this.renderTasks();
+            });
+        }
 
-        document.getElementById('projectFilter').addEventListener('change', () => {
-            this.renderTasks();
-        });
+        const projectFilter = document.getElementById('projectFilter');
+        if (projectFilter) {
+            projectFilter.addEventListener('change', () => {
+                this.renderTasks();
+            });
+        }
 
         // Modal close buttons
         document.querySelectorAll('.close-btn').forEach(btn => {
@@ -161,44 +263,58 @@ class ProjectManager {
         });
     }
 
-    handleLogin() {
-        const password = document.getElementById('password').value;
-        const storedPassword = localStorage.getItem('projectManagerPassword');
+    async handleLogin() {
+        const email = document.getElementById('email')?.value.trim();
+        const password = document.getElementById('password')?.value;
         
-        if (!storedPassword) {
-            // First time setup
-            if (password.length < 6) {
-                this.showError('Password must be at least 6 characters long');
-                return;
-            }
-            localStorage.setItem('projectManagerPassword', btoa(password));
-            this.showNotification('Password set successfully!', 'success');
-        } else {
-            // Verify existing password
-            if (btoa(password) !== storedPassword) {
-                this.showError('Invalid password');
-                return;
-            }
+        if (!email || !password) {
+            this.showError('Email and password are required');
+            return;
         }
 
-        this.currentUser = 'user';
-        this.showDashboard();
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            // onAuthStateChanged will handle setting currentUser and dashboard
+        } catch (error) {
+            if (error.code === 'auth/user-not-found') {
+                if (password.length < 6) {
+                    this.showError('Password must be at least 6 characters long');
+                    return;
+                }
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    // onAuthStateChanged will handle
+                    this.showNotification('Account created successfully!', 'success');
+                } catch (createError) {
+                    this.showError(createError.message);
+                }
+            } else {
+                this.showError(error.message);
+            }
+        }
     }
 
-    logout() {
-        this.currentUser = null;
-        document.getElementById('password').value = '';
-        this.showLoginScreen();
+    async logout() {
+        try {
+            await signOut(auth);
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+        // onAuthStateChanged will handle clearing and showing login
     }
 
     showLoginScreen() {
-        document.getElementById('loginScreen').classList.remove('hidden');
-        document.getElementById('dashboard').classList.add('hidden');
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboard = document.getElementById('dashboard');
+        if (loginScreen) loginScreen.classList.remove('hidden');
+        if (dashboard) dashboard.classList.add('hidden');
     }
 
     showDashboard() {
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('dashboard').classList.remove('hidden');
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboard = document.getElementById('dashboard');
+        if (loginScreen) loginScreen.classList.add('hidden');
+        if (dashboard) dashboard.classList.remove('hidden');
         this.renderProjects();
         this.renderTasks();
         this.renderReminders();
@@ -206,36 +322,67 @@ class ProjectManager {
         this.updateStats();
     }
 
-    // Data Management
-    loadData() {
-        const projectsData = localStorage.getItem('projectManagerProjects');
-        const tasksData = localStorage.getItem('projectManagerTasks');
-        const remindersData = localStorage.getItem('projectManagerReminders');
+    // Data Management (Firebase Firestore)
+    setupDataListeners() {
+        if (!this.currentUser) return;
 
-        this.projects = projectsData ? JSON.parse(projectsData) : [];
-        this.tasks = tasksData ? JSON.parse(tasksData) : [];
-        this.reminders = remindersData ? JSON.parse(remindersData) : [];
+        const userId = this.currentUser;
+
+        // Projects listener
+        const projectsRef = collection(db, `users/${userId}/projects`);
+        this.unsubscribes.projects = onSnapshot(projectsRef, (snapshot) => {
+            this.projects = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            this.renderProjects();
+            this.updateProjectFilter();
+            this.updateStats();
+        }, (error) => {
+            console.error('Projects listener error:', error);
+        });
+
+        // Tasks listener
+        const tasksRef = collection(db, `users/${userId}/tasks`);
+        this.unsubscribes.tasks = onSnapshot(tasksRef, (snapshot) => {
+            this.tasks = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            this.renderTasks();
+            this.updateStats();
+        }, (error) => {
+            console.error('Tasks listener error:', error);
+        });
+
+        // Reminders listener
+        const remindersRef = collection(db, `users/${userId}/reminders`);
+        this.unsubscribes.reminders = onSnapshot(remindersRef, (snapshot) => {
+            this.reminders = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            this.renderReminders();
+        }, (error) => {
+            console.error('Reminders listener error:', error);
+        });
     }
 
-    saveData() {
-        localStorage.setItem('projectManagerProjects', JSON.stringify(this.projects));
-        localStorage.setItem('projectManagerTasks', JSON.stringify(this.tasks));
-        localStorage.setItem('projectManagerReminders', JSON.stringify(this.reminders));
-    }
-
-    // Tab Management
+    // Tab Management (unchanged)
     switchTab(tabName) {
         // Update navigation
         document.querySelectorAll('.nav-item').forEach(btn => {
             btn.classList.remove('active');
         });
-        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+        if (activeBtn) activeBtn.classList.add('active');
 
         // Update tab content
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.remove('active');
         });
-        document.getElementById(`${tabName}Tab`).classList.add('active');
+        const activeTab = document.getElementById(`${tabName}Tab`);
+        if (activeTab) activeTab.classList.add('active');
 
         // Update page title and header button
         this.updatePageHeader(tabName);
@@ -260,24 +407,29 @@ class ProjectManager {
         const pageSubtitle = document.getElementById('pageSubtitle');
         const headerRight = document.querySelector('.header-right');
 
+        if (!pageTitle || !pageSubtitle || !headerRight) return;
+
         switch(tabName) {
             case 'projects':
                 pageTitle.textContent = 'Projects';
                 pageSubtitle.textContent = 'Manage your projects and track progress';
                 headerRight.innerHTML = '<button id="addProjectBtn" class="btn btn-primary"><i class="fas fa-plus"></i> New Project</button>';
-                document.getElementById('addProjectBtn').addEventListener('click', () => this.openProjectModal());
+                const addProjectBtn = document.getElementById('addProjectBtn');
+                if (addProjectBtn) addProjectBtn.addEventListener('click', () => this.openProjectModal());
                 break;
             case 'tasks':
                 pageTitle.textContent = 'Tasks';
                 pageSubtitle.textContent = 'Track and manage all your tasks';
                 headerRight.innerHTML = '<button id="addTaskBtn" class="btn btn-primary"><i class="fas fa-plus"></i> New Task</button>';
-                document.getElementById('addTaskBtn').addEventListener('click', () => this.openTaskModal());
+                const addTaskBtn = document.getElementById('addTaskBtn');
+                if (addTaskBtn) addTaskBtn.addEventListener('click', () => this.openTaskModal());
                 break;
             case 'reminders':
                 pageTitle.textContent = 'Reminders';
                 pageSubtitle.textContent = 'Set and manage your reminders';
                 headerRight.innerHTML = '<button id="addReminderBtn" class="btn btn-primary"><i class="fas fa-plus"></i> New Reminder</button>';
-                document.getElementById('addReminderBtn').addEventListener('click', () => this.openReminderModal());
+                const addReminderBtn = document.getElementById('addReminderBtn');
+                if (addReminderBtn) addReminderBtn.addEventListener('click', () => this.openReminderModal());
                 break;
             case 'settings':
                 pageTitle.textContent = 'Settings';
@@ -288,32 +440,43 @@ class ProjectManager {
     }
 
     updateStats() {
+        const totalProjectsEl = document.getElementById('totalProjects');
+        const activeProjectsEl = document.getElementById('activeProjects');
+        const totalTasksEl = document.getElementById('totalTasks');
+        const completedTasksEl = document.getElementById('completedTasks');
+
+        if (!totalProjectsEl || !activeProjectsEl || !totalTasksEl || !completedTasksEl) return;
+
         const totalProjects = this.projects.length;
         const activeProjects = this.projects.filter(p => p.status === 'active').length;
         const totalTasks = this.tasks.length;
         const completedTasks = this.tasks.filter(t => t.status === 'completed').length;
 
-        document.getElementById('totalProjects').textContent = totalProjects;
-        document.getElementById('activeProjects').textContent = activeProjects;
-        document.getElementById('totalTasks').textContent = totalTasks;
-        document.getElementById('completedTasks').textContent = completedTasks;
+        totalProjectsEl.textContent = totalProjects;
+        activeProjectsEl.textContent = activeProjects;
+        totalTasksEl.textContent = totalTasks;
+        completedTasksEl.textContent = completedTasks;
     }
 
-    // Project Management
+    // Project Management (modified for Firestore)
     openProjectModal(projectId = null) {
         this.currentEditingId = projectId;
         const modal = document.getElementById('projectModal');
         const title = document.getElementById('projectModalTitle');
         const form = document.getElementById('projectForm');
 
+        if (!modal || !title || !form) return;
+
         if (projectId) {
             const project = this.projects.find(p => p.id === projectId);
-            title.textContent = 'Edit Project';
-            document.getElementById('projectName').value = project.name;
-            document.getElementById('projectUrl').value = project.url || '';
-            document.getElementById('projectDescription').value = project.description || '';
-            document.getElementById('projectStatus').value = project.status;
-            document.getElementById('projectPriority').value = project.priority;
+            if (project) {
+                title.textContent = 'Edit Project';
+                document.getElementById('projectName').value = project.name;
+                document.getElementById('projectUrl').value = project.url || '';
+                document.getElementById('projectDescription').value = project.description || '';
+                document.getElementById('projectStatus').value = project.status;
+                document.getElementById('projectPriority').value = project.priority;
+            }
         } else {
             title.textContent = 'New Project';
             form.reset();
@@ -322,54 +485,80 @@ class ProjectManager {
         modal.classList.add('show');
     }
 
-    saveProject() {
-        const formData = {
-            name: document.getElementById('projectName').value,
-            url: document.getElementById('projectUrl').value,
-            description: document.getElementById('projectDescription').value,
-            status: document.getElementById('projectStatus').value,
-            priority: document.getElementById('projectPriority').value
-        };
-
-        if (this.currentEditingId) {
-            // Update existing project
-            const index = this.projects.findIndex(p => p.id === this.currentEditingId);
-            this.projects[index] = { ...this.projects[index], ...formData };
-        } else {
-            // Create new project
-            const project = {
-                id: Date.now().toString(),
-                ...formData,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-            this.projects.push(project);
+    async saveProject() {
+        if (!this.currentUser) {
+            this.showError('Not logged in');
+            return;
         }
 
-        this.saveData();
-        this.renderProjects();
-        this.updateProjectFilter();
-        this.updateStats();
-        this.closeModal(document.getElementById('projectModal'));
-        this.showNotification('Project saved successfully!', 'success');
+        const formData = {
+            name: document.getElementById('projectName')?.value || '',
+            url: document.getElementById('projectUrl')?.value || '',
+            description: document.getElementById('projectDescription')?.value || '',
+            status: document.getElementById('projectStatus')?.value || 'active',
+            priority: document.getElementById('projectPriority')?.value || 'medium'
+        };
+
+        const userId = this.currentUser;
+        const projectsRef = collection(db, `users/${userId}/projects`);
+        const timestamp = serverTimestamp();
+
+        try {
+            if (this.currentEditingId) {
+                // Update existing
+                await setDoc(doc(projectsRef, this.currentEditingId), {
+                    ...formData,
+                    updatedAt: timestamp
+                }, { merge: true });
+            } else {
+                // Create new
+                const project = {
+                    ...formData,
+                    createdAt: timestamp,
+                    updatedAt: timestamp
+                };
+                await addDoc(projectsRef, project);
+            }
+            this.closeModal(document.getElementById('projectModal'));
+            this.showNotification('Project saved successfully!', 'success');
+        } catch (error) {
+            this.showError('Error saving project: ' + error.message);
+        }
     }
 
-    deleteProject(projectId) {
-        if (confirm('Are you sure you want to delete this project? This will also delete all associated tasks.')) {
-            this.projects = this.projects.filter(p => p.id !== projectId);
-            this.tasks = this.tasks.filter(t => t.projectId !== projectId);
-            this.saveData();
-            this.renderProjects();
-            this.renderTasks();
-            this.updateProjectFilter();
-            this.updateStats();
+    async deleteProject(projectId) {
+        if (!confirm('Are you sure you want to delete this project? This will also delete all associated tasks.')) {
+            return;
+        }
+
+        if (!this.currentUser) {
+            this.showError('Not logged in');
+            return;
+        }
+
+        const userId = this.currentUser;
+        const projectsRef = collection(db, `users/${userId}/projects`);
+        const tasksRef = collection(db, `users/${userId}/tasks`);
+
+        try {
+            // Delete associated tasks and project in batch
+            const tasksQuery = query(tasksRef, where('projectId', '==', projectId));
+            const tasksSnapshot = await getDocs(tasksQuery);
+            const batch = writeBatch(db);
+            tasksSnapshot.docs.forEach((docSnap) => batch.delete(docSnap.ref));
+            batch.delete(doc(projectsRef, projectId));
+            await batch.commit();
             this.showNotification('Project deleted successfully!', 'success');
+        } catch (error) {
+            this.showError('Error deleting project: ' + error.message);
         }
     }
 
     renderProjects() {
         const container = document.getElementById('projectsList');
-        const statusFilter = document.getElementById('statusFilter').value;
+        if (!container) return;
+
+        const statusFilter = document.getElementById('statusFilter')?.value || 'all';
         
         let filteredProjects = this.projects;
         if (statusFilter !== 'all') {
@@ -421,31 +610,37 @@ class ProjectManager {
         }).join('');
     }
 
-    // Task Management
+    // Task Management (modified for Firestore)
     openTaskModal(taskId = null, projectId = null) {
         this.currentEditingId = taskId;
         const modal = document.getElementById('taskModal');
         const title = document.getElementById('taskModalTitle');
         const form = document.getElementById('taskForm');
 
+        if (!modal || !title || !form) return;
+
         // Update project dropdown
         const projectSelect = document.getElementById('taskProject');
-        projectSelect.innerHTML = '<option value="">Select a project</option>' +
-            this.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        if (projectSelect) {
+            projectSelect.innerHTML = '<option value="">Select a project</option>' +
+                this.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        }
 
         if (taskId) {
             const task = this.tasks.find(t => t.id === taskId);
-            title.textContent = 'Edit Task';
-            document.getElementById('taskTitle').value = task.title;
-            document.getElementById('taskProject').value = task.projectId;
-            document.getElementById('taskDescription').value = task.description || '';
-            document.getElementById('taskStatus').value = task.status;
-            document.getElementById('taskPriority').value = task.priority;
-            document.getElementById('taskDueDate').value = task.dueDate || '';
+            if (task) {
+                title.textContent = 'Edit Task';
+                document.getElementById('taskTitle').value = task.title;
+                document.getElementById('taskProject').value = task.projectId;
+                document.getElementById('taskDescription').value = task.description || '';
+                document.getElementById('taskStatus').value = task.status;
+                document.getElementById('taskPriority').value = task.priority;
+                document.getElementById('taskDueDate').value = task.dueDate || '';
+            }
         } else {
             title.textContent = 'New Task';
             form.reset();
-            if (projectId) {
+            if (projectId && document.getElementById('taskProject')) {
                 document.getElementById('taskProject').value = projectId;
             }
         }
@@ -453,54 +648,75 @@ class ProjectManager {
         modal.classList.add('show');
     }
 
-    saveTask() {
-        const formData = {
-            title: document.getElementById('taskTitle').value,
-            projectId: document.getElementById('taskProject').value,
-            description: document.getElementById('taskDescription').value,
-            status: document.getElementById('taskStatus').value,
-            priority: document.getElementById('taskPriority').value,
-            dueDate: document.getElementById('taskDueDate').value
-        };
-
-        if (this.currentEditingId) {
-            // Update existing task
-            const index = this.tasks.findIndex(t => t.id === this.currentEditingId);
-            this.tasks[index] = { ...this.tasks[index], ...formData, updatedAt: new Date().toISOString() };
-        } else {
-            // Create new task
-            const task = {
-                id: Date.now().toString(),
-                ...formData,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-            this.tasks.push(task);
+    async saveTask() {
+        if (!this.currentUser) {
+            this.showError('Not logged in');
+            return;
         }
 
-        this.saveData();
-        this.renderTasks();
-        this.renderProjects();
-        this.updateStats();
-        this.closeModal(document.getElementById('taskModal'));
-        this.showNotification('Task saved successfully!', 'success');
+        const formData = {
+            title: document.getElementById('taskTitle')?.value || '',
+            projectId: document.getElementById('taskProject')?.value || '',
+            description: document.getElementById('taskDescription')?.value || '',
+            status: document.getElementById('taskStatus')?.value || 'pending',
+            priority: document.getElementById('taskPriority')?.value || 'medium',
+            dueDate: document.getElementById('taskDueDate')?.value || ''
+        };
+
+        const userId = this.currentUser;
+        const tasksRef = collection(db, `users/${userId}/tasks`);
+        const timestamp = serverTimestamp();
+
+        try {
+            if (this.currentEditingId) {
+                // Update existing
+                await setDoc(doc(tasksRef, this.currentEditingId), {
+                    ...formData,
+                    updatedAt: timestamp
+                }, { merge: true });
+            } else {
+                // Create new
+                const task = {
+                    ...formData,
+                    createdAt: timestamp,
+                    updatedAt: timestamp
+                };
+                await addDoc(tasksRef, task);
+            }
+            this.closeModal(document.getElementById('taskModal'));
+            this.showNotification('Task saved successfully!', 'success');
+        } catch (error) {
+            this.showError('Error saving task: ' + error.message);
+        }
     }
 
-    deleteTask(taskId) {
-        if (confirm('Are you sure you want to delete this task?')) {
-            this.tasks = this.tasks.filter(t => t.id !== taskId);
-            this.saveData();
-            this.renderTasks();
-            this.renderProjects();
-            this.updateStats();
+    async deleteTask(taskId) {
+        if (!confirm('Are you sure you want to delete this task?')) {
+            return;
+        }
+
+        if (!this.currentUser) {
+            this.showError('Not logged in');
+            return;
+        }
+
+        const userId = this.currentUser;
+        const tasksRef = collection(db, `users/${userId}/tasks`);
+
+        try {
+            await deleteDoc(doc(tasksRef, taskId));
             this.showNotification('Task deleted successfully!', 'success');
+        } catch (error) {
+            this.showError('Error deleting task: ' + error.message);
         }
     }
 
     renderTasks() {
         const container = document.getElementById('tasksTableBody');
-        const statusFilter = document.getElementById('taskStatusFilter').value;
-        const projectFilter = document.getElementById('projectFilter').value;
+        if (!container) return;
+
+        const statusFilter = document.getElementById('taskStatusFilter')?.value || 'all';
+        const projectFilter = document.getElementById('projectFilter')?.value || 'all';
         
         let filteredTasks = this.tasks;
         
@@ -557,35 +773,43 @@ class ProjectManager {
 
     updateProjectFilter() {
         const projectFilter = document.getElementById('projectFilter');
+        if (!projectFilter) return;
         projectFilter.innerHTML = '<option value="all">All Projects</option>' +
             this.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
     }
 
     viewProjectTasks(projectId) {
         this.switchTab('tasks');
-        document.getElementById('projectFilter').value = projectId;
+        const filterEl = document.getElementById('projectFilter');
+        if (filterEl) filterEl.value = projectId;
         this.renderTasks();
     }
 
-    // Reminder Management
+    // Reminder Management (modified for Firestore)
     openReminderModal(reminderId = null) {
         this.currentEditingId = reminderId;
         const modal = document.getElementById('reminderModal');
         const title = document.getElementById('reminderModalTitle');
         const form = document.getElementById('reminderForm');
 
+        if (!modal || !title || !form) return;
+
         // Update project dropdown
         const projectSelect = document.getElementById('reminderProject');
-        projectSelect.innerHTML = '<option value="">No specific project</option>' +
-            this.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        if (projectSelect) {
+            projectSelect.innerHTML = '<option value="">No specific project</option>' +
+                this.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        }
 
         if (reminderId) {
             const reminder = this.reminders.find(r => r.id === reminderId);
-            title.textContent = 'Edit Reminder';
-            document.getElementById('reminderTitle').value = reminder.title;
-            document.getElementById('reminderDescription').value = reminder.description || '';
-            document.getElementById('reminderDateTime').value = reminder.dateTime;
-            document.getElementById('reminderProject').value = reminder.projectId || '';
+            if (reminder) {
+                title.textContent = 'Edit Reminder';
+                document.getElementById('reminderTitle').value = reminder.title;
+                document.getElementById('reminderDescription').value = reminder.description || '';
+                document.getElementById('reminderDateTime').value = reminder.dateTime;
+                document.getElementById('reminderProject').value = reminder.projectId || '';
+            }
         } else {
             title.textContent = 'New Reminder';
             form.reset();
@@ -598,47 +822,71 @@ class ProjectManager {
         modal.classList.add('show');
     }
 
-    saveReminder() {
-        const formData = {
-            title: document.getElementById('reminderTitle').value,
-            description: document.getElementById('reminderDescription').value,
-            dateTime: document.getElementById('reminderDateTime').value,
-            projectId: document.getElementById('reminderProject').value || null
-        };
-
-        if (this.currentEditingId) {
-            // Update existing reminder
-            const index = this.reminders.findIndex(r => r.id === this.currentEditingId);
-            this.reminders[index] = { ...this.reminders[index], ...formData, updatedAt: new Date().toISOString() };
-        } else {
-            // Create new reminder
-            const reminder = {
-                id: Date.now().toString(),
-                ...formData,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                notified: false
-            };
-            this.reminders.push(reminder);
+    async saveReminder() {
+        if (!this.currentUser) {
+            this.showError('Not logged in');
+            return;
         }
 
-        this.saveData();
-        this.renderReminders();
-        this.closeModal(document.getElementById('reminderModal'));
-        this.showNotification('Reminder saved successfully!', 'success');
+        const formData = {
+            title: document.getElementById('reminderTitle')?.value || '',
+            description: document.getElementById('reminderDescription')?.value || '',
+            dateTime: document.getElementById('reminderDateTime')?.value || '',
+            projectId: document.getElementById('reminderProject')?.value || null,
+            notified: false
+        };
+
+        const userId = this.currentUser;
+        const remindersRef = collection(db, `users/${userId}/reminders`);
+        const timestamp = serverTimestamp();
+
+        try {
+            if (this.currentEditingId) {
+                // Update existing
+                await setDoc(doc(remindersRef, this.currentEditingId), {
+                    ...formData,
+                    updatedAt: timestamp
+                }, { merge: true });
+            } else {
+                // Create new
+                const reminder = {
+                    ...formData,
+                    createdAt: timestamp,
+                    updatedAt: timestamp
+                };
+                await addDoc(remindersRef, reminder);
+            }
+            this.closeModal(document.getElementById('reminderModal'));
+            this.showNotification('Reminder saved successfully!', 'success');
+        } catch (error) {
+            this.showError('Error saving reminder: ' + error.message);
+        }
     }
 
-    deleteReminder(reminderId) {
-        if (confirm('Are you sure you want to delete this reminder?')) {
-            this.reminders = this.reminders.filter(r => r.id !== reminderId);
-            this.saveData();
-            this.renderReminders();
+    async deleteReminder(reminderId) {
+        if (!confirm('Are you sure you want to delete this reminder?')) {
+            return;
+        }
+
+        if (!this.currentUser) {
+            this.showError('Not logged in');
+            return;
+        }
+
+        const userId = this.currentUser;
+        const remindersRef = collection(db, `users/${userId}/reminders`);
+
+        try {
+            await deleteDoc(doc(remindersRef, reminderId));
             this.showNotification('Reminder deleted successfully!', 'success');
+        } catch (error) {
+            this.showError('Error deleting reminder: ' + error.message);
         }
     }
 
     renderReminders() {
         const container = document.getElementById('remindersList');
+        if (!container) return;
         
         if (this.reminders.length === 0) {
             container.innerHTML = '<div class="no-data">No reminders found. Create your first reminder to get started!</div>';
@@ -677,24 +925,32 @@ class ProjectManager {
         }).join('');
     }
 
-    markReminderNotified(reminderId) {
-        const reminder = this.reminders.find(r => r.id === reminderId);
-        if (reminder) {
-            reminder.notified = true;
-            this.saveData();
-            this.renderReminders();
+    async markReminderNotified(reminderId) {
+        if (!this.currentUser) {
+            this.showError('Not logged in');
+            return;
+        }
+
+        const userId = this.currentUser;
+        const remindersRef = collection(db, `users/${userId}/reminders`);
+
+        try {
+            await updateDoc(doc(remindersRef, reminderId), { notified: true });
             this.showNotification('Reminder marked as notified!', 'success');
+        } catch (error) {
+            this.showError('Error updating reminder: ' + error.message);
         }
     }
 
-    // Reminder Checking
+    // Reminder Checking (modified to update Firestore)
     startReminderChecker() {
+        if (this.reminderCheckInterval) clearInterval(this.reminderCheckInterval);
         this.reminderCheckInterval = setInterval(() => {
             this.checkReminders();
         }, 60000); // Check every minute
     }
 
-    checkReminders() {
+    async checkReminders() {
         const now = new Date();
         const upcomingReminders = this.reminders.filter(reminder => {
             const reminderTime = new Date(reminder.dateTime);
@@ -702,27 +958,22 @@ class ProjectManager {
             return timeDiff > 0 && timeDiff <= 5 * 60 * 1000 && !reminder.notified; // 5 minutes before
         });
 
-        upcomingReminders.forEach(reminder => {
+        for (const reminder of upcomingReminders) {
             this.showNotification(`Reminder: ${reminder.title}`, 'info');
-            reminder.notified = true;
-        });
-
-        if (upcomingReminders.length > 0) {
-            this.saveData();
+            if (this.currentUser) {
+                const userId = this.currentUser;
+                await updateDoc(doc(collection(db, `users/${userId}/reminders`), reminder.id), {
+                    notified: true
+                });
+            }
         }
     }
 
-    // Settings
-    changePassword() {
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-
-        const storedPassword = localStorage.getItem('projectManagerPassword');
-        if (btoa(currentPassword) !== storedPassword) {
-            this.showError('Current password is incorrect');
-            return;
-        }
+    // Settings (modified for Firebase)
+    async changePassword() {
+        const currentPassword = document.getElementById('currentPassword')?.value || '';
+        const newPassword = document.getElementById('newPassword')?.value || '';
+        const confirmPassword = document.getElementById('confirmPassword')?.value || '';
 
         if (newPassword.length < 6) {
             this.showError('New password must be at least 6 characters long');
@@ -734,9 +985,27 @@ class ProjectManager {
             return;
         }
 
-        localStorage.setItem('projectManagerPassword', btoa(newPassword));
-        document.getElementById('changePasswordForm').reset();
-        this.showNotification('Password changed successfully!', 'success');
+        const user = auth.currentUser;
+        if (!user) {
+            this.showError('Not logged in');
+            return;
+        }
+
+        try {
+            // Reauthenticate for security
+            const credential = EmailAuthProvider.credential(user.email, currentPassword);
+            await reauthenticateWithCredential(user, credential);
+            await updatePassword(user, newPassword);
+            const changePasswordForm = document.getElementById('changePasswordForm');
+            if (changePasswordForm) changePasswordForm.reset();
+            this.showNotification('Password changed successfully!', 'success');
+        } catch (error) {
+            if (error.code === 'auth/wrong-password') {
+                this.showError('Current password is incorrect');
+            } else {
+                this.showError(error.message);
+            }
+        }
     }
 
     exportData() {
@@ -760,46 +1029,91 @@ class ProjectManager {
         this.showNotification('Data exported successfully!', 'success');
     }
 
-    importData(file) {
+    async importData(file) {
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 const data = JSON.parse(e.target.result);
                 
-                if (confirm('This will replace all your current data. Are you sure you want to continue?')) {
-                    this.projects = data.projects || [];
-                    this.tasks = data.tasks || [];
-                    this.reminders = data.reminders || [];
-                    this.saveData();
-                    this.renderProjects();
-                    this.renderTasks();
-                    this.renderReminders();
-                    this.updateProjectFilter();
-                    this.updateStats();
-                    this.showNotification('Data imported successfully!', 'success');
+                if (!confirm('This will replace all your current data. Are you sure you want to continue?')) {
+                    return;
                 }
+
+                if (!this.currentUser) {
+                    this.showError('Not logged in');
+                    return;
+                }
+
+                const userId = this.currentUser;
+                const batch = writeBatch(db);
+
+                // Delete existing data
+                const [projectsSnap, tasksSnap, remindersSnap] = await Promise.all([
+                    getDocs(collection(db, `users/${userId}/projects`)),
+                    getDocs(collection(db, `users/${userId}/tasks`)),
+                    getDocs(collection(db, `users/${userId}/reminders`))
+                ]);
+
+                projectsSnap.docs.forEach(docSnap => batch.delete(docSnap.ref));
+                tasksSnap.docs.forEach(docSnap => batch.delete(docSnap.ref));
+                remindersSnap.docs.forEach(docSnap => batch.delete(docSnap.ref));
+
+                // Add imported data (preserve IDs if present)
+                const timestamp = serverTimestamp();
+                (data.projects || []).forEach(proj => {
+                    const docRef = doc(collection(db, `users/${userId}/projects`), proj.id);
+                    batch.set(docRef, {
+                        ...proj,
+                        createdAt: proj.createdAt || timestamp,
+                        updatedAt: timestamp
+                    });
+                });
+
+                (data.tasks || []).forEach(task => {
+                    const docRef = doc(collection(db, `users/${userId}/tasks`), task.id);
+                    batch.set(docRef, {
+                        ...task,
+                        createdAt: task.createdAt || timestamp,
+                        updatedAt: timestamp
+                    });
+                });
+
+                (data.reminders || []).forEach(rem => {
+                    const docRef = doc(collection(db, `users/${userId}/reminders`), rem.id);
+                    batch.set(docRef, {
+                        ...rem,
+                        createdAt: rem.createdAt || timestamp,
+                        updatedAt: timestamp,
+                        notified: rem.notified || false
+                    });
+                });
+
+                await batch.commit();
+                this.showNotification('Data imported successfully!', 'success');
             } catch (error) {
-                this.showError('Invalid file format. Please select a valid backup file.');
+                this.showError('Invalid file format or import error: ' + error.message);
             }
         };
         reader.readAsText(file);
     }
 
-    // Utility Functions
+    // Utility Functions (unchanged)
     closeModal(modal) {
-        modal.classList.remove('show');
+        if (modal) modal.classList.remove('show');
         this.currentEditingId = null;
     }
 
     showError(message) {
         const errorDiv = document.getElementById('loginError');
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-        setTimeout(() => {
-            errorDiv.style.display = 'none';
-        }, 5000);
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
     }
 
     showNotification(message, type = 'success') {
@@ -820,5 +1134,7 @@ class ProjectManager {
     }
 }
 
-// Initialize the application
+// Initialize the application (make 'pm' global for onclick handlers)
 const pm = new ProjectManager();
+window.pm = pm; // Expose to global scope for inline onclicks
+```
