@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
 const links = [
@@ -18,8 +19,8 @@ export default function Nav() {
     <>
       {/* Top bar — desktop */}
       <header className="hidden md:flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 sticky top-0 z-10">
-        <Link href="/" className="font-semibold text-gray-900 text-lg tracking-tight">
-          Projects
+        <Link href="/">
+          <Image src="/logo.png" alt="SJ Design" width={100} height={28} priority />
         </Link>
         <nav className="flex items-center gap-1">
           {links.map((link) => (
