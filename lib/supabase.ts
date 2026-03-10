@@ -38,6 +38,12 @@ export type ProjectUpdate = {
   created_at: string
 }
 
+export type Client = {
+  id: string
+  name: string
+  created_at: string
+}
+
 export type PushSubscription = {
   id: string
   endpoint: string

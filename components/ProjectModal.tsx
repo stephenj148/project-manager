@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import type { Project } from '@/lib/supabase'
+import { useState, useEffect } from 'react'
+import { supabase, type Project, type Client } from '@/lib/supabase'
 
 type Props = {
   onClose: () => void
@@ -18,6 +18,13 @@ export default function ProjectModal({ onClose, onSave, initial = {}, title }: P
   const [priority, setPriority] = useState<Project['priority']>(initial.priority ?? 'medium')
   const [dueDate, setDueDate] = useState(initial.due_date ?? '')
   const [saving, setSaving] = useState(false)
+  const [clients, setClients] = useState<Client[]>([])
+
+  useEffect(() => {
+    supabase.from('clients').select('*').order('name').then(({ data }) => {
+      if (data) setClients(data as Client[])
+    })
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -55,12 +62,16 @@ export default function ProjectModal({ onClose, onSave, initial = {}, title }: P
 
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">Client</label>
-            <input
+            <select
               value={client}
               onChange={(e) => setClient(e.target.value)}
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="e.g. Acme Corp"
-            />
+            >
+              <option value="">No client</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.name}>{c.name}</option>
+              ))}
+            </select>
           </div>
 
           <div>

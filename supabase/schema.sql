@@ -1,5 +1,11 @@
 -- Run this in your Supabase SQL editor
 
+create table clients (
+  id uuid default gen_random_uuid() primary key,
+  name text not null unique,
+  created_at timestamptz default now()
+);
+
 create table projects (
   id uuid default gen_random_uuid() primary key,
   name text not null,
@@ -58,11 +64,13 @@ create trigger tasks_updated_at before update on tasks
   for each row execute procedure update_updated_at();
 
 -- Allow all access (single-user personal app)
+alter table clients enable row level security;
 alter table projects enable row level security;
 alter table tasks enable row level security;
 alter table project_updates enable row level security;
 alter table push_subscriptions enable row level security;
 
+create policy "allow all" on clients for all using (true) with check (true);
 create policy "allow all" on projects for all using (true) with check (true);
 create policy "allow all" on tasks for all using (true) with check (true);
 create policy "allow all" on project_updates for all using (true) with check (true);
