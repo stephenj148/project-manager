@@ -40,10 +40,10 @@ export default function ProjectsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
-        <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
+        <h1 className="text-3xl font-bold text-slate-100 tracking-tight">Projects</h1>
         <button
           onClick={() => setShowAdd(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+          className="bg-amber-500 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-amber-400 transition-colors"
         >
           + New
         </button>
@@ -55,10 +55,10 @@ export default function ProjectsPage() {
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors ${
+            className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${
               filter === s
-                ? 'bg-indigo-600 text-white'
-                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                ? 'bg-amber-500 text-slate-900'
+                : 'bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700'
             }`}
           >
             {s}
@@ -69,18 +69,18 @@ export default function ProjectsPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-white rounded-xl animate-pulse border border-gray-100" />
+            <div key={i} className="h-32 bg-slate-800 rounded-xl animate-pulse border border-slate-700" />
           ))}
         </div>
       ) : projects.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-gray-500 text-sm">No {filter === 'all' ? '' : filter} projects</p>
+          <p className="text-slate-500 text-sm">No {filter === 'all' ? '' : filter} projects</p>
         </div>
       ) : (
         <div className="space-y-6">
           {groupByClient(projects).map(({ client, projects: group }) => (
             <div key={client}>
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{client}</h2>
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">{client}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {group.map((p) => (
                   <ProjectCard key={p.id} project={p} />

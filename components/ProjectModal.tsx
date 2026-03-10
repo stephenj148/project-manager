@@ -42,30 +42,32 @@ export default function ProjectModal({ onClose, onSave, initial = {}, title }: P
     onClose()
   }
 
+  const inputClass = "w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-2xl md:rounded-2xl w-full md:max-w-md p-6 shadow-xl">
-        <h2 className="font-semibold text-gray-900 text-lg mb-5">{title}</h2>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-slate-800 border border-slate-700 rounded-t-2xl md:rounded-2xl w-full md:max-w-md p-6 shadow-xl">
+        <h2 className="font-bold text-slate-100 text-lg mb-5">{title}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Project name *</label>
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Project name *</label>
             <input
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={inputClass}
               placeholder="e.g. Website redesign"
               required
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Client</label>
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Client</label>
             <select
               value={client}
               onChange={(e) => setClient(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={inputClass}
             >
               <option value="">No client</option>
               {clients.map((c) => (
@@ -75,11 +77,11 @@ export default function ProjectModal({ onClose, onSave, initial = {}, title }: P
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Description</label>
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              className={`${inputClass} resize-none`}
               rows={3}
               placeholder="What is this project about?"
             />
@@ -87,11 +89,11 @@ export default function ProjectModal({ onClose, onSave, initial = {}, title }: P
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Status</label>
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Status</label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as Project['status'])}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={inputClass}
               >
                 <option value="active">Active</option>
                 <option value="on-hold">On Hold</option>
@@ -100,11 +102,11 @@ export default function ProjectModal({ onClose, onSave, initial = {}, title }: P
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Priority</label>
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Priority</label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Project['priority'])}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={inputClass}
               >
                 <option value="high">High</option>
                 <option value="medium">Medium</option>
@@ -114,12 +116,12 @@ export default function ProjectModal({ onClose, onSave, initial = {}, title }: P
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Due date</label>
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Due date</label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={inputClass}
             />
           </div>
 
@@ -127,14 +129,14 @@ export default function ProjectModal({ onClose, onSave, initial = {}, title }: P
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-2.5 border border-slate-600 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-700 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving || !name.trim()}
-              className="flex-1 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              className="flex-1 py-2.5 bg-amber-500 text-slate-900 rounded-lg text-sm font-semibold hover:bg-amber-400 disabled:opacity-50 transition-colors"
             >
               {saving ? 'Saving…' : 'Save'}
             </button>

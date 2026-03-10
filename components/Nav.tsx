@@ -18,9 +18,9 @@ export default function Nav() {
   return (
     <>
       {/* Top bar — desktop */}
-      <header className="hidden md:flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 sticky top-0 z-10">
+      <header className="hidden md:flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-700 sticky top-0 z-10">
         <Link href="/">
-          <Image src="/logo.png" alt="SJ Design" width={100} height={28} priority />
+          <Image src="/logo.png" alt="SJ Design" width={100} height={28} priority className="brightness-0 invert opacity-90" />
         </Link>
         <nav className="flex items-center gap-1">
           {links.map((link) => (
@@ -29,10 +29,10 @@ export default function Nav() {
               href={link.href}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 link.highlight
-                  ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  ? 'bg-amber-500 text-slate-900 hover:bg-amber-400'
                   : pathname === link.href
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-slate-700 text-slate-100'
+                  : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
               }`}
             >
               {link.label}
@@ -42,7 +42,7 @@ export default function Nav() {
       </header>
 
       {/* Bottom tab bar — mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 flex">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-10 bg-slate-900 border-t border-slate-700 flex">
         {links.map((link) => (
           <Link
             key={link.href}
@@ -50,11 +50,11 @@ export default function Nav() {
             className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
               link.highlight
                 ? pathname === link.href
-                  ? 'text-indigo-600'
-                  : 'text-indigo-500'
+                  ? 'text-amber-400'
+                  : 'text-amber-500'
                 : pathname === link.href
-                ? 'text-gray-900'
-                : 'text-gray-400'
+                ? 'text-slate-100'
+                : 'text-slate-500'
             }`}
           >
             <span className="text-lg leading-none">{link.icon}</span>

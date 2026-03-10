@@ -34,12 +34,10 @@ export default function Settings() {
     }
     setNotifState(Notification.permission as NotifState)
 
-    // Check if already subscribed
     navigator.serviceWorker.ready.then((reg) => {
       reg.pushManager.getSubscription().then((sub) => {
         if (sub) {
           setSubscriptionEndpoint(sub.endpoint)
-          // Fetch saved settings
           supabase
             .from('push_subscriptions')
             .select('checkin_frequency, due_alert_days')
@@ -99,23 +97,23 @@ export default function Settings() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Settings</h1>
+      <h1 className="text-3xl font-bold text-slate-100 tracking-tight mb-6">Settings</h1>
 
       {/* Push notifications */}
-      <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-4">
-        <h2 className="font-semibold text-gray-900 mb-1">Push notifications</h2>
-        <p className="text-sm text-gray-500 mb-4">
+      <section className="bg-slate-800 rounded-xl border border-slate-700 p-5 mb-4">
+        <h2 className="font-bold text-slate-200 mb-1">Push notifications</h2>
+        <p className="text-sm text-slate-500 mb-4">
           Get reminders on this device. Install as a PWA for the best experience.
         </p>
 
         {notifState === 'unsupported' && (
-          <div className="bg-yellow-50 text-yellow-700 text-sm rounded-lg p-3">
+          <div className="bg-yellow-900/30 border border-yellow-800 text-yellow-300 text-sm rounded-lg p-3">
             Push notifications aren't supported in this browser. Install the app on your phone for notifications.
           </div>
         )}
 
         {notifState === 'denied' && (
-          <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3">
+          <div className="bg-red-900/30 border border-red-800 text-red-300 text-sm rounded-lg p-3">
             Notifications are blocked. Enable them in your browser/OS settings, then reload.
           </div>
         )}
@@ -124,14 +122,14 @@ export default function Settings() {
           <button
             onClick={enableNotifications}
             disabled={subscribing}
-            className="w-full py-3 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            className="w-full py-3 bg-amber-500 text-slate-900 rounded-lg text-sm font-semibold hover:bg-amber-400 disabled:opacity-50 transition-colors"
           >
             {subscribing ? 'Setting up…' : 'Enable notifications'}
           </button>
         )}
 
         {isSubscribed && (
-          <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 rounded-lg p-3">
+          <div className="flex items-center gap-2 text-sm text-emerald-400 bg-emerald-900/30 border border-emerald-800 rounded-lg p-3">
             <span>✓</span> Notifications enabled on this device
           </div>
         )}
@@ -140,17 +138,17 @@ export default function Settings() {
       {/* Check-in frequency */}
       {isSubscribed && (
         <>
-          <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-4">
-            <h2 className="font-semibold text-gray-900 mb-1">Check-in reminders</h2>
-            <p className="text-sm text-gray-500 mb-4">How often should we nudge you to update your projects?</p>
+          <section className="bg-slate-800 rounded-xl border border-slate-700 p-5 mb-4">
+            <h2 className="font-bold text-slate-200 mb-1">Check-in reminders</h2>
+            <p className="text-sm text-slate-500 mb-4">How often should we nudge you to update your projects?</p>
             <div className="space-y-2">
               {FREQUENCIES.map((f) => (
                 <label
                   key={f.value}
                   className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${
                     frequency === f.value
-                      ? 'border-indigo-500 bg-indigo-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-amber-500 bg-amber-900/20'
+                      : 'border-slate-700 hover:border-slate-600'
                   }`}
                 >
                   <input
@@ -159,20 +157,20 @@ export default function Settings() {
                     value={f.value}
                     checked={frequency === f.value}
                     onChange={() => setFrequency(f.value)}
-                    className="text-indigo-600"
+                    className="text-amber-500"
                   />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{f.label}</p>
-                    <p className="text-xs text-gray-500">{f.desc}</p>
+                    <p className="text-sm font-medium text-slate-200">{f.label}</p>
+                    <p className="text-xs text-slate-500">{f.desc}</p>
                   </div>
                 </label>
               ))}
             </div>
           </section>
 
-          <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
-            <h2 className="font-semibold text-gray-900 mb-1">Due date alerts</h2>
-            <p className="text-sm text-gray-500 mb-4">Notify me when a deadline is approaching</p>
+          <section className="bg-slate-800 rounded-xl border border-slate-700 p-5 mb-6">
+            <h2 className="font-bold text-slate-200 mb-1">Due date alerts</h2>
+            <p className="text-sm text-slate-500 mb-4">Notify me when a deadline is approaching</p>
             <div className="space-y-2">
               {DUE_ALERT_OPTIONS.map((opt) => (
                 <label
@@ -183,9 +181,9 @@ export default function Settings() {
                     type="checkbox"
                     checked={dueAlertDays.includes(opt.days)}
                     onChange={() => toggleDueDay(opt.days)}
-                    className="w-4 h-4 text-indigo-600 rounded"
+                    className="w-4 h-4 rounded accent-amber-500"
                   />
-                  <span className="text-sm text-gray-900">{opt.label}</span>
+                  <span className="text-sm text-slate-300">{opt.label}</span>
                 </label>
               ))}
             </div>
@@ -193,7 +191,7 @@ export default function Settings() {
 
           <button
             onClick={saveSettings}
-            className="w-full py-3 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors"
+            className="w-full py-3 bg-amber-500 text-slate-900 rounded-xl text-sm font-semibold hover:bg-amber-400 transition-colors"
           >
             {saved ? '✓ Saved' : 'Save settings'}
           </button>
@@ -201,12 +199,12 @@ export default function Settings() {
       )}
 
       {/* Install PWA prompt */}
-      <section className="mt-6 bg-gray-50 rounded-xl border border-gray-200 p-5">
-        <h2 className="font-semibold text-gray-900 mb-2">Install on your phone</h2>
-        <p className="text-sm text-gray-600 leading-relaxed">
-          On <strong>iPhone</strong>: open in Safari → Share → "Add to Home Screen"
+      <section className="mt-6 bg-slate-800 rounded-xl border border-slate-700 p-5">
+        <h2 className="font-bold text-slate-200 mb-2">Install on your phone</h2>
+        <p className="text-sm text-slate-500 leading-relaxed">
+          On <strong className="text-slate-300">iPhone</strong>: open in Safari → Share → "Add to Home Screen"
           <br />
-          On <strong>Android</strong>: tap the menu → "Install app" or "Add to home screen"
+          On <strong className="text-slate-300">Android</strong>: tap the menu → "Install app" or "Add to home screen"
         </p>
       </section>
     </div>

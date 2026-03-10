@@ -55,14 +55,14 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-3xl font-bold text-slate-100 tracking-tight">Dashboard</h1>
+          <p className="text-sm text-slate-500 mt-0.5">
             {active.length} active project{active.length !== 1 ? 's' : ''}
           </p>
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+          className="bg-amber-500 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-amber-400 transition-colors"
         >
           + New
         </button>
@@ -70,25 +70,25 @@ export default function Dashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <StatCard value={active.length} label="Active" color="text-blue-600" />
-        <StatCard value={overdue.length} label="Overdue" color="text-red-600" />
-        <StatCard value={dueSoon.length} label="Due soon" color="text-orange-500" />
+        <StatCard value={active.length} label="Active" color="text-amber-400" />
+        <StatCard value={overdue.length} label="Overdue" color="text-red-400" />
+        <StatCard value={dueSoon.length} label="Due soon" color="text-orange-400" />
       </div>
 
       {/* Check-in nudge */}
       {stale.length > 0 && (
         <div
           onClick={() => router.push('/checkin')}
-          className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-6 flex items-center gap-3 cursor-pointer hover:bg-indigo-100 transition-colors"
+          className="bg-amber-900/20 border border-amber-800/50 rounded-xl p-4 mb-6 flex items-center gap-3 cursor-pointer hover:bg-amber-900/30 transition-colors"
         >
           <span className="text-2xl">💬</span>
           <div>
-            <p className="text-sm font-semibold text-indigo-900">Time for a check-in</p>
-            <p className="text-xs text-indigo-600 mt-0.5">
+            <p className="text-sm font-semibold text-amber-200">Time for a check-in</p>
+            <p className="text-xs text-amber-500 mt-0.5">
               {stale.length} project{stale.length !== 1 ? 's' : ''} haven't been updated in a week
             </p>
           </div>
-          <span className="ml-auto text-indigo-400">›</span>
+          <span className="ml-auto text-amber-600">›</span>
         </div>
       )}
 
@@ -96,17 +96,17 @@ export default function Dashboard() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-white rounded-xl animate-pulse border border-gray-100" />
+            <div key={i} className="h-32 bg-slate-800 rounded-xl animate-pulse border border-slate-700" />
           ))}
         </div>
       ) : projects.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-4xl mb-3">📋</p>
-          <p className="text-gray-600 font-medium">No projects yet</p>
-          <p className="text-gray-400 text-sm mt-1">Add your first project to get started</p>
+          <p className="text-slate-300 font-semibold">No projects yet</p>
+          <p className="text-slate-500 text-sm mt-1">Add your first project to get started</p>
           <button
             onClick={() => setShowAdd(true)}
-            className="mt-4 bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+            className="mt-4 bg-amber-500 text-slate-900 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-amber-400 transition-colors"
           >
             Add project
           </button>
@@ -115,7 +115,7 @@ export default function Dashboard() {
         <div className="space-y-6">
           {groupByClient(projects).map(({ client, projects: group }) => (
             <div key={client}>
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{client}</h2>
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">{client}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {group.map((p) => (
                   <ProjectCard key={p.id} project={p} />
@@ -139,9 +139,9 @@ export default function Dashboard() {
 
 function StatCard({ value, label, color }: { value: number; label: string; color: string }) {
   return (
-    <div className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm text-center">
+    <div className="bg-slate-800 rounded-xl p-3 border border-slate-700 text-center">
       <p className={`text-2xl font-bold ${color}`}>{value}</p>
-      <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+      <p className="text-xs text-slate-500 mt-0.5 font-medium uppercase tracking-wide">{label}</p>
     </div>
   )
 }

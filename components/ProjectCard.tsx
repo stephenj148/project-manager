@@ -14,16 +14,16 @@ export default function ProjectCard({ project }: { project: Project }) {
   return (
     <Link href={`/projects/${project.id}`}>
       <div
-        className={`bg-white rounded-xl p-4 shadow-sm border transition-shadow hover:shadow-md cursor-pointer ${
-          overdue ? 'border-red-200' : 'border-gray-100'
+        className={`bg-slate-800 rounded-xl p-4 border transition-all hover:border-slate-500 cursor-pointer ${
+          overdue ? 'border-red-800' : 'border-slate-700'
         }`}
       >
         <div className="flex items-start justify-between gap-2 mb-2">
           <div>
             {project.client && (
-              <p className="text-xs text-indigo-500 font-medium mb-0.5">{project.client}</p>
+              <p className="text-xs text-amber-500 font-semibold tracking-wide mb-0.5 uppercase">{project.client}</p>
             )}
-            <h3 className="font-semibold text-gray-900 text-sm leading-snug">{project.name}</h3>
+            <h3 className="font-semibold text-slate-100 text-sm leading-snug">{project.name}</h3>
           </div>
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${priorityColors[project.priority]}`}>
             {project.priority}
@@ -31,7 +31,7 @@ export default function ProjectCard({ project }: { project: Project }) {
         </div>
 
         {project.description && (
-          <p className="text-xs text-gray-500 mb-3 line-clamp-2">{project.description}</p>
+          <p className="text-xs text-slate-500 mb-3 line-clamp-2">{project.description}</p>
         )}
 
         <div className="flex items-center gap-2 flex-wrap mb-3">
@@ -41,7 +41,7 @@ export default function ProjectCard({ project }: { project: Project }) {
           {project.due_date && (
             <span
               className={`text-xs font-medium ${
-                overdue ? 'text-red-600' : urgent ? 'text-orange-500' : 'text-gray-500'
+                overdue ? 'text-red-400' : urgent ? 'text-orange-400' : 'text-slate-500'
               }`}
             >
               {dueLabel}
@@ -52,11 +52,11 @@ export default function ProjectCard({ project }: { project: Project }) {
         {total > 0 && (
           <div className="mb-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-gray-500">{done}/{total} tasks</span>
+              <span className="text-xs text-slate-500">{done}/{total} tasks</span>
             </div>
-            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
               <div
-                className="h-full bg-indigo-500 rounded-full transition-all"
+                className="h-full bg-amber-500 rounded-full transition-all"
                 style={{ width: `${total ? (done / total) * 100 : 0}%` }}
               />
             </div>
@@ -64,12 +64,12 @@ export default function ProjectCard({ project }: { project: Project }) {
         )}
 
         {lastUpdate && (
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-slate-600">
             Updated {formatDistanceToNow(parseISO(lastUpdate.created_at), { addSuffix: true })}
           </p>
         )}
         {!lastUpdate && (
-          <p className="text-xs text-gray-400">No check-ins yet</p>
+          <p className="text-xs text-slate-600">No check-ins yet</p>
         )}
       </div>
     </Link>

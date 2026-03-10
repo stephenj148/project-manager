@@ -76,15 +76,15 @@ export default function ProjectDetail() {
   if (loading) {
     return (
       <div className="space-y-4 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded-lg w-2/3" />
-        <div className="h-32 bg-white rounded-xl" />
-        <div className="h-48 bg-white rounded-xl" />
+        <div className="h-8 bg-slate-800 rounded-lg w-2/3" />
+        <div className="h-32 bg-slate-800 rounded-xl" />
+        <div className="h-48 bg-slate-800 rounded-xl" />
       </div>
     )
   }
 
   if (!project) {
-    return <p className="text-gray-500 text-center py-16">Project not found.</p>
+    return <p className="text-slate-500 text-center py-16">Project not found.</p>
   }
 
   const { label: dueLabel, overdue } = formatDueDate(project.due_date)
@@ -95,7 +95,7 @@ export default function ProjectDetail() {
       {/* Back */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-5 transition-colors"
+        className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-200 mb-5 transition-colors"
       >
         ← Back
       </button>
@@ -104,20 +104,20 @@ export default function ProjectDetail() {
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
           {project.client && (
-            <p className="text-sm font-medium text-indigo-500 mb-1">{project.client}</p>
+            <p className="text-xs font-bold text-amber-500 tracking-widest uppercase mb-1">{project.client}</p>
           )}
-          <h1 className="text-2xl font-bold text-gray-900 leading-tight">{project.name}</h1>
+          <h1 className="text-2xl font-bold text-slate-100 leading-tight">{project.name}</h1>
         </div>
         <div className="flex gap-2 shrink-0">
           <button
             onClick={() => setShowEdit(true)}
-            className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            className="px-3 py-1.5 border border-slate-600 rounded-lg text-sm text-slate-400 hover:bg-slate-700 transition-colors"
           >
             Edit
           </button>
           <button
             onClick={deleteProject}
-            className="px-3 py-1.5 border border-red-200 rounded-lg text-sm text-red-500 hover:bg-red-50 transition-colors"
+            className="px-3 py-1.5 border border-red-900 rounded-lg text-sm text-red-500 hover:bg-red-900/30 transition-colors"
           >
             Delete
           </button>
@@ -125,34 +125,34 @@ export default function ProjectDetail() {
       </div>
 
       {/* Meta */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-4 space-y-3">
+      <div className="bg-slate-800 rounded-xl border border-slate-700 p-4 mb-4 space-y-3">
         <div className="flex flex-wrap gap-2">
-          <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusColors[project.status]}`}>
+          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors[project.status]}`}>
             {project.status}
           </span>
-          <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${priorityColors[project.priority]}`}>
+          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${priorityColors[project.priority]}`}>
             {project.priority} priority
           </span>
           {project.due_date && (
-            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${overdue ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${overdue ? 'bg-red-900/40 text-red-400' : 'bg-slate-700 text-slate-400'}`}>
               {dueLabel}
             </span>
           )}
         </div>
 
         {project.description && (
-          <p className="text-sm text-gray-600 leading-relaxed">{project.description}</p>
+          <p className="text-sm text-slate-400 leading-relaxed">{project.description}</p>
         )}
 
         {tasks.length > 0 && (
           <div>
-            <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-              <span>Progress</span>
+            <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+              <span className="font-medium uppercase tracking-wide">Progress</span>
               <span>{doneTasks}/{tasks.length} tasks</span>
             </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
               <div
-                className="h-full bg-indigo-500 rounded-full transition-all"
+                className="h-full bg-amber-500 rounded-full transition-all"
                 style={{ width: `${tasks.length ? (doneTasks / tasks.length) * 100 : 0}%` }}
               />
             </div>
@@ -161,8 +161,8 @@ export default function ProjectDetail() {
       </div>
 
       {/* Tasks */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-4">
-        <h2 className="font-semibold text-gray-900 mb-3 text-sm">Tasks</h2>
+      <div className="bg-slate-800 rounded-xl border border-slate-700 p-4 mb-4">
+        <h2 className="font-bold text-slate-300 mb-3 text-xs uppercase tracking-widest">Tasks</h2>
         {tasks.length > 0 ? (
           tasks.map((task) => (
             <TaskItem
@@ -173,7 +173,7 @@ export default function ProjectDetail() {
             />
           ))
         ) : (
-          <p className="text-xs text-gray-400 py-2">No tasks yet</p>
+          <p className="text-xs text-slate-600 py-2">No tasks yet</p>
         )}
 
         {/* Add task */}
@@ -182,12 +182,12 @@ export default function ProjectDetail() {
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
             placeholder="Add a task…"
-            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
           />
           <button
             type="submit"
             disabled={addingTask || !newTask.trim()}
-            className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            className="px-3 py-2 bg-amber-500 text-slate-900 rounded-lg text-sm font-semibold hover:bg-amber-400 disabled:opacity-50 transition-colors"
           >
             Add
           </button>
@@ -196,20 +196,20 @@ export default function ProjectDetail() {
 
       {/* Check-in history */}
       {updates.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-          <h2 className="font-semibold text-gray-900 mb-3 text-sm">Check-in history</h2>
+        <div className="bg-slate-800 rounded-xl border border-slate-700 p-4">
+          <h2 className="font-bold text-slate-300 mb-3 text-xs uppercase tracking-widest">Check-in history</h2>
           <div className="space-y-3">
             {updates.map((u) => (
               <div key={u.id} className="flex gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                 <div>
                   {u.status_snapshot && (
-                    <p className="text-xs font-medium text-indigo-600 mb-0.5 capitalize">
+                    <p className="text-xs font-semibold text-amber-500 mb-0.5 capitalize">
                       {u.status_snapshot}
                     </p>
                   )}
-                  {u.note && <p className="text-sm text-gray-700">{u.note}</p>}
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  {u.note && <p className="text-sm text-slate-300">{u.note}</p>}
+                  <p className="text-xs text-slate-600 mt-0.5">
                     {formatDistanceToNow(parseISO(u.created_at), { addSuffix: true })}
                   </p>
                 </div>
