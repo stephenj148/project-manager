@@ -8,6 +8,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 export type Project = {
   id: string
   name: string
+  client: string | null
   description: string | null
   status: 'active' | 'completed' | 'on-hold' | 'paused'
   priority: 'high' | 'medium' | 'low'

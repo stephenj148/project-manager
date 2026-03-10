@@ -54,3 +54,15 @@ export const statusColors: Record<string, string> = {
 export function taskStats(tasks: Task[]): { done: number; total: number } {
   return { done: tasks.filter((t) => t.completed).length, total: tasks.length }
 }
+
+export function groupByClient(projects: Project[]): Array<{ client: string; projects: Project[] }> {
+  const map = new Map<string, Project[]>()
+  for (const p of projects) {
+    const key = p.client || ''
+    if (!map.has(key)) map.set(key, [])
+    map.get(key)!.push(p)
+  }
+  return [...map.entries()]
+    .sort(([a], [b]) => (!a ? 1 : !b ? -1 : a.localeCompare(b)))
+    .map(([client, ps]) => ({ client: client || 'No client', projects: ps }))
+}

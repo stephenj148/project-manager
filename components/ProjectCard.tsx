@@ -19,7 +19,12 @@ export default function ProjectCard({ project }: { project: Project }) {
         }`}
       >
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-semibold text-gray-900 text-sm leading-snug">{project.name}</h3>
+          <div>
+            {project.client && (
+              <p className="text-xs text-indigo-500 font-medium mb-0.5">{project.client}</p>
+            )}
+            <h3 className="font-semibold text-gray-900 text-sm leading-snug">{project.name}</h3>
+          </div>
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${priorityColors[project.priority]}`}>
             {project.priority}
           </span>

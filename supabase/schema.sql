@@ -3,6 +3,7 @@
 create table projects (
   id uuid default gen_random_uuid() primary key,
   name text not null,
+  client text,
   description text,
   status text default 'active' check (status in ('active', 'completed', 'on-hold', 'paused')),
   priority text default 'medium' check (priority in ('high', 'medium', 'low')),

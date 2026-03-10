@@ -102,7 +102,12 @@ export default function ProjectDetail() {
 
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 leading-tight">{project.name}</h1>
+        <div>
+          {project.client && (
+            <p className="text-sm font-medium text-indigo-500 mb-1">{project.client}</p>
+          )}
+          <h1 className="text-2xl font-bold text-gray-900 leading-tight">{project.name}</h1>
+        </div>
         <div className="flex gap-2 shrink-0">
           <button
             onClick={() => setShowEdit(true)}

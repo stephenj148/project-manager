@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase, type Project } from '@/lib/supabase'
 import ProjectCard from '@/components/ProjectCard'
 import ProjectModal from '@/components/ProjectModal'
-import { sortProjects } from '@/lib/utils'
+import { sortProjects, groupByClient } from '@/lib/utils'
 import { isPast, parseISO, isWithinInterval, addDays } from 'date-fns'
 
 export default function Dashboard() {
@@ -112,9 +112,16 @@ export default function Dashboard() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {projects.map((p) => (
-            <ProjectCard key={p.id} project={p} />
+        <div className="space-y-6">
+          {groupByClient(projects).map(({ client, projects: group }) => (
+            <div key={client}>
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{client}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                {group.map((p) => (
+                  <ProjectCard key={p.id} project={p} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}

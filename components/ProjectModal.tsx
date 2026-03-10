@@ -12,6 +12,7 @@ type Props = {
 
 export default function ProjectModal({ onClose, onSave, initial = {}, title }: Props) {
   const [name, setName] = useState(initial.name ?? '')
+  const [client, setClient] = useState(initial.client ?? '')
   const [description, setDescription] = useState(initial.description ?? '')
   const [status, setStatus] = useState<Project['status']>(initial.status ?? 'active')
   const [priority, setPriority] = useState<Project['priority']>(initial.priority ?? 'medium')
@@ -24,6 +25,7 @@ export default function ProjectModal({ onClose, onSave, initial = {}, title }: P
     setSaving(true)
     await onSave({
       name: name.trim(),
+      client: client.trim() || null,
       description: description.trim() || null,
       status,
       priority,
@@ -48,6 +50,16 @@ export default function ProjectModal({ onClose, onSave, initial = {}, title }: P
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="e.g. Website redesign"
               required
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Client</label>
+            <input
+              value={client}
+              onChange={(e) => setClient(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="e.g. Acme Corp"
             />
           </div>
 
